@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Aportes por Candidato</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 2em;
+            background: #f8fafc;
+            color: #222;
+        }
+        h1 {
+            color: #1a73e8;
+            margin-bottom: 0.5em;
+        }
+        label {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        #candidatoSelect {
+            padding: 0.5em 1em;
+            border-radius: 6px;
+            border: 1px solid #b0b0b0;
+            font-size: 1em;
+            margin-left: 0.5em;
+            background: #fff;
+            box-shadow: 0 1px 2px #0001;
+            transition: border 0.2s;
+        }
+        #candidatoSelect:focus {
+            border: 1.5px solid #1a73e8;
+            outline: none;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 2em;
+            background: #fff;
+            box-shadow: 0 2px 8px #0002;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            border: none;
+            padding: 10px 8px;
+            text-align: left;
+        }
+        th {
+            background: #e3eefd;
+            color: #1a73e8;
+            font-weight: 600;
+        }
+        tr:nth-child(even) td {
+            background: #f4f8fb;
+        }
+        tr:hover td {
+            background: #eaf3ff;
+        }
+        #aportesContainer p {
+            margin-top: 2em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>Aportes por Candidato</h1>
+    <label for="candidatoSelect">Selecciona un candidato:</label>
+    <select id="candidatoSelect">
+        <option value="">-- Selecciona --</option>
+    </select>
+    <div id="aportesContainer"></div>
+    <script>
+        let aportes = [];
+        // Cargar el JSON localmente (debe estar en el mismo directorio)
+        fetch('aportes.json')
+            .then(response => response.json())
+            .then(data => {
+                // Filtrar solo objetos válidos con candidato
+                aportes = data.filter(x => x && x["ELECCIONES PRESIDENCIALES Y PARLAMENTARIAS  2025"] && x["Column5"] === "CANDIDATO");
+                const candidatos = [...new Set(aportes.map(x => x["ELECCIONES PRESIDENCIALES Y PARLAMENTARIAS  2025"]))].sort();
+                const select = document.getElementById('candidatoSelect');
+                candidatos.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    select.appendChild(opt);
+                });
+            });
+
+        function formatMonto(monto) {
+            if (typeof monto === 'number') monto = monto.toString();
+            if (!monto) return '';
+            // Quitar decimales si los hay, y formatear con puntos
+            return monto.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        document.getElementById('candidatoSelect').addEventListener('change', function() {
+            const candidato = this.value;
+            const container = document.getElementById('aportesContainer');
+            if (!candidato) { container.innerHTML = ''; return; }
+            const rows = aportes.filter(x => x["ELECCIONES PRESIDENCIALES Y PARLAMENTARIAS  2025"] === candidato);
+            if (rows.length === 0) { container.innerHTML = '<p>No hay aportes para este candidato.</p>'; return; }
+            let html = '<table><thead><tr>';
+            html += '<th>Tipo de Aporte</th><th>Nombre Aportante</th><th>Tipo Aportante</th><th>Tipo Donatario</th><th>Elección</th><th>Territorio</th><th>Pacto</th><th>Partido</th><th>Fecha</th><th>Monto</th>';
+            html += '</tr></thead><tbody>';
+            rows.forEach(x => {
+                html += `<tr><td>${x.Column1}</td><td>${x.Column2}</td><td>${x.Column3}</td><td>${x.Column5}</td><td>${x.Column6}</td><td>${x.Column7}</td><td>${x.Column8}</td><td>${x.Column9}</td><td>${x.Column10}</td><td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:bold;color:#1a73e8;">${formatMonto(x.Column11)}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        });
+    </script>
+</body>
+</html>

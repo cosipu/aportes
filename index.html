@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Aportes por Candidato</title>
     <style>
         body {
@@ -27,6 +28,7 @@
             background: #fff;
             box-shadow: 0 1px 2px #0001;
             transition: border 0.2s;
+            max-width: 100%;
         }
         #candidatoSelect:focus {
             border: 1.5px solid #1a73e8;
@@ -39,12 +41,21 @@
             background: #fff;
             box-shadow: 0 2px 8px #0002;
             border-radius: 8px;
-            overflow: hidden;
+            overflow-x: auto;
+            font-size: 1em;
+            display: block;
         }
         th, td {
             border: none;
             padding: 10px 8px;
             text-align: left;
+            word-break: break-word;
+            max-width: 180px;
+        }
+        td[data-label='Monto'] {
+            word-break: break-all;
+            max-width: 120px;
+            overflow-wrap: break-word;
         }
         th {
             background: #e3eefd;
@@ -60,6 +71,60 @@
         #aportesContainer p {
             margin-top: 2em;
             color: #888;
+        }
+        @media (max-width: 700px) {
+            body {
+                margin: 0.5em;
+            }
+            h1 {
+                font-size: 1.3em;
+            }
+            label {
+                font-size: 1em;
+            }
+            #candidatoSelect {
+                font-size: 1em;
+                width: 100%;
+                margin: 0.5em 0 1em 0;
+            }
+            table, thead, tbody, th, td, tr {
+                display: block;
+                width: 100%;
+            }
+            thead {
+                display: none;
+            }
+            tr {
+                margin-bottom: 1em;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 1px 4px #0001;
+                padding: 0.5em 0;
+            }
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                min-height: 2.2em;
+                font-size: 0.98em;
+                max-width: 100vw;
+                box-sizing: border-box;
+            }
+            td[data-label='Monto'] {
+                word-break: break-all;
+                max-width: 100vw;
+                overflow-wrap: break-word;
+            }
+            td:before {
+                position: absolute;
+                left: 0.7em;
+                top: 0.7em;
+                width: 45%;
+                white-space: pre-wrap;
+                font-weight: bold;
+                color: #1a73e8;
+                content: attr(data-label);
+            }
         }
     </style>
 </head>
@@ -102,10 +167,22 @@
             const rows = aportes.filter(x => x["ELECCIONES PRESIDENCIALES Y PARLAMENTARIAS  2025"] === candidato);
             if (rows.length === 0) { container.innerHTML = '<p>No hay aportes para este candidato.</p>'; return; }
             let html = '<table><thead><tr>';
-            html += '<th>Tipo de Aporte</th><th>Nombre Aportante</th><th>Tipo Aportante</th><th>Tipo Donatario</th><th>Elección</th><th>Territorio</th><th>Pacto</th><th>Partido</th><th>Fecha</th><th>Monto</th>';
+            const headers = ['Tipo de Aporte','Nombre Aportante','Tipo Aportante','Tipo Donatario','Elección','Territorio','Pacto','Partido','Fecha','Monto'];
+            html += headers.map(h=>`<th>${h}</th>`).join('');
             html += '</tr></thead><tbody>';
             rows.forEach(x => {
-                html += `<tr><td>${x.Column1}</td><td>${x.Column2}</td><td>${x.Column3}</td><td>${x.Column5}</td><td>${x.Column6}</td><td>${x.Column7}</td><td>${x.Column8}</td><td>${x.Column9}</td><td>${x.Column10}</td><td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:bold;color:#1a73e8;">${formatMonto(x.Column11)}</td></tr>`;
+                html += `<tr>`;
+                html += `<td data-label='Tipo de Aporte'>${x.Column1}</td>`;
+                html += `<td data-label='Nombre Aportante'>${x.Column2}</td>`;
+                html += `<td data-label='Tipo Aportante'>${x.Column3}</td>`;
+                html += `<td data-label='Tipo Donatario'>${x.Column5}</td>`;
+                html += `<td data-label='Elección'>${x.Column6}</td>`;
+                html += `<td data-label='Territorio'>${x.Column7}</td>`;
+                html += `<td data-label='Pacto'>${x.Column8}</td>`;
+                html += `<td data-label='Partido'>${x.Column9}</td>`;
+                html += `<td data-label='Fecha'>${x.Column10}</td>`;
+                html += `<td data-label='Monto' style="font-variant-numeric:tabular-nums;font-weight:bold;color:#1a73e8;">${formatMonto(x.Column11)}</td>`;
+                html += `</tr>`;
             });
             html += '</tbody></table>';
             container.innerHTML = html;
